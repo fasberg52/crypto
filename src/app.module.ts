@@ -6,6 +6,8 @@ import { CryptoModule } from './modules/crypto/crypto.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { config as dotenvConfig } from 'dotenv';
 import typeorm from './config/typeorm.config';
+import { ResponseServerExeption } from './common/exceptions/catch.exeption';
+import { APP_FILTER } from '@nestjs/core';
 dotenvConfig({ path: '.env' });
 @Module({
   imports: [
@@ -20,6 +22,12 @@ dotenvConfig({ path: '.env' });
       inject: [ConfigService],
     }),
     CryptoModule,
+  ],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: ResponseServerExeption,
+    },
   ],
 })
 export class AppModule {}
