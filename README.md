@@ -35,6 +35,10 @@ $ pnpm install
 ## Compile and run the project
 
 ```bash
+# development-SWC recomended
+
+$ pnpm run swc
+
 # development
 $ pnpm run start
 
@@ -43,6 +47,15 @@ $ pnpm run start:dev
 
 # production mode
 $ pnpm run start:prod
+```
+
+## Run Migrations
+
+```bash
+# migration run
+
+$ npm run migration:run
+
 ```
 
 ## Run tests
@@ -97,4 +110,5 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
 # crypto
