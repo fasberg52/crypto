@@ -6,13 +6,15 @@ import { Server } from 'socket.io';
 import { API_GATEIO } from 'src/common/constants/api-gateio';
 import WebSocket from 'ws';
 
-@WebSocketGateway(81, { transports: ['websocket'] })
+@WebSocketGateway(3001, { transports: ['websocket'] })
 @Injectable()
 export class PriceGateWayService implements OnModuleInit, OnGatewayInit {
   constructor(private redisService: RedisService) {}
   private ws: WebSocket;
 
   onModuleInit() {
+    console.log('geteway is initialized >>');
+
     this.initializeGateWebSocket();
   }
 
@@ -26,8 +28,8 @@ export class PriceGateWayService implements OnModuleInit, OnGatewayInit {
       console.log('connected to gate.io');
       this.ws.send(
         JSON.stringify({
-          method: 'subscribe',
-          params: ['spot.tickers', 'BTC_USDT', 'ETH_USDT'],
+          method: 'ticker.subscribe',
+          params: ['BTC_USDT', 'ETH_USDT'],
           id: 1,
         }),
       );
@@ -35,6 +37,7 @@ export class PriceGateWayService implements OnModuleInit, OnGatewayInit {
 
     this.ws.on('message', (data) => {
       this.handleWebSocketMessage(data.toString());
+      console.log(`message >>> :, ${data.toString()}\n`);
     });
 
     this.ws.on('error', (error) => {
@@ -50,8 +53,10 @@ export class PriceGateWayService implements OnModuleInit, OnGatewayInit {
   private async handleWebSocketMessage(message: string) {
     try {
       const response = JSON.parse(message);
-      if (response?.result) {
-        const { currency_pair: symbol, last: price } = response.result;
+      if (response?.method === 'ticker.update' && response.params) {
+        const [symbol, tickerData] = response.params;
+        const { last: price } = tickerData;
+
         if (symbol && price) {
           await this.redisService.setPrice(symbol, price);
           console.log(`updated >>> ${symbol} price to ${price} in redis`);

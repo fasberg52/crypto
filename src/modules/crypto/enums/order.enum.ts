@@ -1,4 +1,5 @@
-export class OrderStatusEnum {
-  static readonly OPEN = 'OPEN';
-  static readonly CLOSED = 'CLOSED';
+export enum OrderStatusEnum {
+  OPEN = 'OPEN',
+  CLOSED = 'CLOSED',
+  LIQUID = 'LIQUID',
 }

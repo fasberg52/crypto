@@ -7,4 +7,8 @@ export class OrderRepository extends Repository<OrderEntity> {
   constructor(private dataSource: DataSource) {
     super(OrderEntity, dataSource.createEntityManager());
   }
+
+  async findById(id: number): Promise<OrderEntity> {
+    return this.findOneBy({ id });
+  }
 }
