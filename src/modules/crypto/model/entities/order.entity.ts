@@ -10,7 +10,7 @@ import {
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
-@Entity({ name: 'order', schema: 'market' })
+@Entity({ name: 'orders', schema: 'market' })
 export class OrderEntity extends BaseEntity {
   @ApiProperty()
   @IsNumber()
