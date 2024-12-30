@@ -2,6 +2,7 @@ import { MigrationInterface, QueryRunner, Table } from 'typeorm';
 
 export class CreateTableOrder1735538303971 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.createSchema('market', true);
     await queryRunner.createTable(
       new Table({
         name: 'orders',

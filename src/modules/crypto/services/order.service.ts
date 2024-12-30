@@ -25,7 +25,7 @@ export class OrderService {
     this.btcPrice = await this.redisService.getPrice('BTC_USDT');
     this.ethPrice = await this.redisService.getPrice('ETH_USDT');
     console.log('BTC Price:', this.btcPrice);
-    setTimeout(() => this.updatePrices(), 1000000);
+    setTimeout(() => this.updatePrices(), 10000);
   }
 
   async createOrder() {
@@ -67,7 +67,7 @@ export class OrderService {
   }
 
   private async startOrderCreation() {
-    setInterval(() => this.createOrder(), 1000000);
+    setInterval(() => this.createOrder(), 10000);
   }
 
   private async startOrderProcessing() {
@@ -86,7 +86,7 @@ export class OrderService {
           await this.orderRepository.save(order);
         }
       }
-    }, 1000000);
+    }, 10000);
   }
 
   async getOrderById(id: number) {
