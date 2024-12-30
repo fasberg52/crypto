@@ -22,10 +22,10 @@ export class OrderService {
   }
 
   private async updatePrices() {
-    this.btcPrice = parseFloat(await this.redisService.getPrice('BTC_USDT'));
-    this.ethPrice = parseFloat(await this.redisService.getPrice('ETH_USDT'));
+    this.btcPrice = await this.redisService.getPrice('BTC_USDT');
+    this.ethPrice = await this.redisService.getPrice('ETH_USDT');
     console.log('BTC Price:', this.btcPrice);
-    setTimeout(() => this.updatePrices(), 1000);
+    setTimeout(() => this.updatePrices(), 1000000);
   }
 
   async createOrder() {
@@ -49,7 +49,7 @@ export class OrderService {
   }
 
   private getRandomAmount(): number {
-    return Math.random() * (0.1 - 0.001) + 0.001;
+    return parseFloat((Math.random() * (0.1 - 0.001) + 0.001).toFixed(3));
   }
 
   private createOrderEntity(
@@ -67,7 +67,7 @@ export class OrderService {
   }
 
   private async startOrderCreation() {
-    setInterval(() => this.createOrder(), 100000);
+    setInterval(() => this.createOrder(), 1000000);
   }
 
   private async startOrderProcessing() {
@@ -77,14 +77,16 @@ export class OrderService {
       });
 
       for (const order of orders) {
-        const currentPrice =
-          order.symbol === 'BTC_USDT' ? this.btcPrice : this.ethPrice;
-        if (order.price * 0.97 > currentPrice) {
+        const currentPrice = await this.redisService.getPrice(order.symbol);
+
+        console.log('current price >>>>>>>>>>>.:', currentPrice);
+        if (currentPrice > order.price * 0.03 + order.price) {
           order.status = OrderStatusEnum.LIQUID;
+          order.liquidPrice = currentPrice;
           await this.orderRepository.save(order);
         }
       }
-    }, 100000);
+    }, 1000000);
   }
 
   async getOrderById(id: number) {
