@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { OrderRepository } from './model/repositories/order.repository';
+import { OrderRepository } from './models/repositories/order.repository';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 const repositories = [OrderRepository];

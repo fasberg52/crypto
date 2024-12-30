@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity } from 'typeorm';
+import {  Column, Entity } from 'typeorm';
 import { OrderStatusEnum } from '../../enums/order.enum';
 import {
   IsEnum,
@@ -9,9 +9,10 @@ import {
   Min,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { BaseEntity } from 'src/common/entities/base.entity';
 
 @Entity({ name: 'orders', schema: 'market' })
-export class OrderEntity extends BaseEntity {
+export class OrderEntity extends BaseEntity{
   @ApiProperty()
   @IsNumber()
   @Min(0)
