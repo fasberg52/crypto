@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { RedisService } from './redis.service';
 import { OrderRepository } from '../models/repositories/order.repository';
 import { OrderEntity } from '../models/entities/order.entity';
@@ -90,7 +90,11 @@ export class OrderService {
   }
 
   async getOrderById(id: number) {
-    return this.orderRepository.findById(id);
+    const order = await this.orderRepository.findById(id);
+    if (!order) {
+      throw new NotFoundException('سفارش پیدا نشد');
+    }
+    return order;
   }
 
   async getAllOrders(query: GetAllOrderDto): Promise<[OrderEntity[], number]> {
