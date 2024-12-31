@@ -6,7 +6,7 @@ import { Server } from 'socket.io';
 import { API_GATEIO } from 'src/common/constants/api-gateio';
 import WebSocket from 'ws';
 
-@WebSocketGateway(3001, { transports: ['websocket'] })
+@WebSocketGateway(3000, { transports: ['websocket'] })
 @Injectable()
 export class PriceGateWayService implements OnModuleInit, OnGatewayInit {
   constructor(private redisService: RedisService) {}
@@ -37,7 +37,6 @@ export class PriceGateWayService implements OnModuleInit, OnGatewayInit {
 
     this.ws.on('message', (data) => {
       this.handleWebSocketMessage(data.toString());
-      console.log(`message >>> :, ${data.toString()}\n`);
     });
 
     this.ws.on('error', (error) => {

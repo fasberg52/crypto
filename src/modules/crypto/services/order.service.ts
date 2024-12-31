@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { RedisService } from './redis.service';
 import { OrderRepository } from '../models/repositories/order.repository';
 import { OrderEntity } from '../models/entities/order.entity';
@@ -6,6 +6,7 @@ import { OrderStatusEnum } from '../enums/order.enum';
 import { GetAllOrderDto } from '../dtos/get-all-order.dto';
 import { FindManyOptions, FindOptionsWhere } from 'typeorm';
 import { applySortingToFindOptions } from 'src/common/factory/sort';
+import { ClientProxy } from '@nestjs/microservices';
 
 @Injectable()
 export class OrderService {
@@ -15,6 +16,7 @@ export class OrderService {
   constructor(
     private readonly redisService: RedisService,
     private readonly orderRepository: OrderRepository,
+    @Inject('ORDER_SERVICE') private readonly orderServiceClient: ClientProxy,
   ) {
     this.updatePrices();
     this.startOrderCreation();
@@ -24,8 +26,8 @@ export class OrderService {
   private async updatePrices() {
     this.btcPrice = await this.redisService.getPrice('BTC_USDT');
     this.ethPrice = await this.redisService.getPrice('ETH_USDT');
-    console.log('BTC Price:', this.btcPrice);
-    setTimeout(() => this.updatePrices(), 10000);
+    // console.log('BTC Price:', this.btcPrice);
+    setTimeout(() => this.updatePrices(), 1000);
   }
 
   async createOrder() {
@@ -42,7 +44,7 @@ export class OrderService {
         this.ethPrice,
         ethAmount,
       );
-      console.log('BTC Order:', btcOrder);
+
       await this.orderRepository.save(btcOrder);
       await this.orderRepository.save(ethOrder);
     }
@@ -66,27 +68,38 @@ export class OrderService {
     return order;
   }
 
-  private async startOrderCreation() {
-    setInterval(() => this.createOrder(), 10000);
-  }
-
   private async startOrderProcessing() {
     setInterval(async () => {
       const orders = await this.orderRepository.find({
+        select: {
+          id: true,
+          symbol: true,
+          price: true,
+          status: true,
+        },
         where: { status: OrderStatusEnum.OPEN },
       });
 
       for (const order of orders) {
-        const currentPrice = await this.redisService.getPrice(order.symbol);
-
-        console.log('current price >>>>>>>>>>>.:', currentPrice);
-        if (currentPrice > order.price * 0.03 + order.price) {
-          order.status = OrderStatusEnum.LIQUID;
-          order.liquidPrice = currentPrice;
-          await this.orderRepository.save(order);
-        }
+        await this.updateOrderStatus(order);
       }
-    }, 10000);
+    }, 1000);
+  }
+
+  private async updateOrderStatus(order: OrderEntity) {
+    const currentPrice = await this.redisService.getPrice(order.symbol);
+
+    if (currentPrice > order.price * 0.03 + order.price) {
+      order.status = OrderStatusEnum.LIQUID;
+      order.liquidPrice = currentPrice;
+      const saveOrder = await this.orderRepository.save(order);
+
+      this.orderServiceClient.emit<OrderEntity>('order_liquidated', saveOrder);
+    }
+  }
+
+  private async startOrderCreation() {
+    setInterval(() => this.createOrder(), 1000);
   }
 
   async getOrderById(id: number) {

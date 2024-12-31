@@ -13,7 +13,7 @@ export class SwaggerHelper {
   private title = process.env.SWAGGER_TITLE;
   private description = process.env.SWAGGER_DESCRIPTION;
 
-  setup(app: NestExpressApplication) {
+  setup(app: any) {
     if (!this.basePath || !this.username || !this.password) {
       console.error('Swagger Disabled : configuration missing ...');
       return;
